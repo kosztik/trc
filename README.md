@@ -6,14 +6,14 @@ Adatbázis terv
 
 tradesOpen
 
--id
--OrdId
--OrdSym
--OrdTyp
--OrdLot
--OrdPrice
--OrdSL
--OrdTP
+- id
+- OrdId
+- OrdSym
+- OrdTyp
+- OrdLot
+- OrdPrice
+- OrdSL
+- OrdTP
 
 szerver:
 - a szerver beírja a tradesOpen táblába a kereskedést amíg az megy
