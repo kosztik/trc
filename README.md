@@ -2,9 +2,10 @@
 
 
 Adatbázis terv
+-
 
 tradesOpen
-----------
+
 id
 OrdId
 OrdSym
