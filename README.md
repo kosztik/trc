@@ -25,3 +25,8 @@ Kliens:
 - Amennyiben nem, a hiányzót megnyitja - ha az még tűréshatáron belül van
 - Figyeli, ha bizonyos hiba van (adott számszor (pl market closed)) újra próbálkozik - amíg a tűréshatáron belül van!
 
+A http hívásokkal kapcsolatos anyag:
+https://www.mql5.com/en/code/mt4/libraries -innen:
+https://www.mql5.com/en/code/10121
+https://www.mql5.com/en/code/11119 - talán ez a jobb
+https://www.mql5.com/en/code/10644 - direkt hívások
