@@ -1,7 +1,7 @@
 
 
 
-Adatbázis terv
+AdatbÃ¡zis terv
 -
 
 tradesOpen
@@ -16,12 +16,12 @@ tradesOpen
 - OrdTP
 
 szerver:
-- a szerver beírja a tradesOpen táblába a kereskedést amíg az megy
-- a szerver törli az adott kereskedést a tradesOpen táblából amikor annak vége 
+- a szerver beÃ­rja a tradesOpen tÃ¡blÃ¡ba a kereskedÃ©st amÃ­g az megy. Ez mehetne url post -on keresztÃ¼l is, nem tudom melyik a jobb. A haszna, hogy Ã­gy nem kell beÃ©pÃ­teni a mysql kezelÃ©st. Ezzel most egy Ã¶tletet adtam magamnak. Lehet Ã­gy is fogom kiprÃ³bÃ¡lni :)
+- a szerver tÃ¶rli az adott kereskedÃ©st a tradesOpen tÃ¡blÃ¡bÃ³l amikor annak vÃ©ge 
 
 Kliens:
-- a kliens minden tick-nél lekérdezi ezt a táblát (nem lesz ez túlterhelés a mysql szerver felé?)
-- Ellenõrzi, hogy a megfelelõ trade-k vannak -e nyitva (ez most hogy megy ?)
-- Amennyiben nem, a hiányzót megnyitja - ha az még tûréshatáron belül van
-- Figyeli, ha bizonyos hiba van (adott számszor (pl market closed)) újra próbálkozik - amíg a tûréshatáron belül van!
+- a kliens minden tick-nÃ©l lekÃ©rdezi ezt a tÃ¡blÃ¡t, az apache-on keresztÃ¼l http protokollal. Vagyis egy php fÃ¡jlt hivogat majd. Ezzel a terhelÃ©st tudom szabÃ¡lyozni (cachelni). Persze nem nagyon mert minden tick szÃ¡mÃ­t. Ãgy a kliensekbe nem is kell beÃ©pÃ­teni a mysql klienst. 
+- EllenÅ‘rzi, hogy a megfelelÅ‘ trade-k vannak -e nyitva (ez most hogy megy ?)
+- Amennyiben nem, a hiÃ¡nyzÃ³t megnyitja - ha az mÃ©g tÅ±rÃ©shatÃ¡ron belÃ¼l van
+- Figyeli, ha bizonyos hiba van (adott szÃ¡mszor (pl market closed)) Ãºjra prÃ³bÃ¡lkozik - amÃ­g a tÅ±rÃ©shatÃ¡ron belÃ¼l van!
 
