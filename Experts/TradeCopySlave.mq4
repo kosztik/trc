@@ -48,6 +48,7 @@
 
 
 #include <sqlite.mqh>
+#include <mq4-http.mqh>
 
 #property copyright "Copyright © 2011, Syslog.eu, rel. 2012-05-15"
 #property link      "http://syslog.eu"

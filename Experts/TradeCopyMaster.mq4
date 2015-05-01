@@ -20,6 +20,20 @@
 //|                                                                  |
 //|                                                 http://syslog.eu |
 //+------------------------------------------------------------------+
+
+/*
+   2015.05.01
+      A módosításom itt, hogy az eredeti egy fájlba írja a kereskedéseket, az
+      itteni verzió pedig httpGET paranccsal egy php fájl hív meg egy szerveren
+      ami egy adatbázisba írja be ezeket az adatokat.
+      
+      pl. string http_result = httpGET("url.php");
+
+*/
+
+
+#include <mq4-http.mqh>
+
 #property copyright "Copyright © 2011, Syslog.eu, rel. 2012-01-04"
 #property link      "http://syslog.eu"
 
@@ -152,7 +166,8 @@ void save_positions() {
     PrevOrdTP[i]=OrdTP[i];
   }
 
-
+  // Size: hány aktív kereskedésünk van éppen. Ezt minden alkalommal újra és újra kiírja.
+  
   int handle=FileOpen("TradeCopy.csv",FILE_CSV|FILE_WRITE,",");
   if(handle>0) {
     FileWrite(handle,TotalCounter);
@@ -162,7 +177,21 @@ void save_positions() {
     }
     FileClose(handle);
   }else Print("File open has failed, error: ",GetLastError());
+
+  /*
+      Az url esetében másként kell. Nem kell mindig kiírni újra az adatokat. Viszont php programban 
+      ellenõrizni kell OrdId alapján, hogy mely trade-ok aktívak és melyek nem.
+      
+      kliens oldalon amely OrdId nincs a válaszban, azt azonnal zárni kell!
+      
+      server oldalon, ha egy OrdId már benne van az adatbázisban, akkor azt újra már nem kell beírni.
+   
+  string http_result = httpGET("savetrade.php?t=OrdId[i],OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],OrdSL[i],OrdTP[i]");
+  */
+
 }
+
+
 
    
 //+------------------------------------------------------------------+
