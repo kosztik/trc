@@ -85,7 +85,7 @@ int start() {
     start=GetTickCount();
     cmt=start+nl+"Counter: "+TotalCounter;
     get_positions();
-    if(compare_positions()) save_positions();
+    if(compare_positions()) save_positions(); // vagyis csak akkor ment, amikor változás van!
     Comment(cmt);
     TickCount=GetTickCount()-start;
     if(delay>TickCount)Sleep(delay-TickCount-2);
@@ -179,14 +179,15 @@ void save_positions() {
   }else Print("File open has failed, error: ",GetLastError());
 
   /*
-      Az url esetében másként kell. Nem kell mindig kiírni újra az adatokat. Viszont php programban 
-      ellenõrizni kell OrdId alapján, hogy mely trade-ok aktívak és melyek nem.
+      A fenti FileWrite íráskor össze kell állítanom egy hosszú stringet. Ebben benne van az összes trade.
+      Ezt küldöm el, a httpGET hívással a szervernek. Ami lejegyzi a kereskedéseket mysql adatbázisba!
       
-      kliens oldalon amely OrdId nincs a válaszban, azt azonnal zárni kell!
-      
-      server oldalon, ha egy OrdId már benne van az adatbázisban, akkor azt újra már nem kell beírni.
+      A string:
+      ?t=OrdId[i],OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],OrdSL[i],OrdTP[i],kib,
+         OrdId[i],OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],OrdSL[i],OrdTP[i],kib,
+         OrdId[i],OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],OrdSL[i],OrdTP[i],kib,
    
-  string http_result = httpGET("savetrade.php?t=OrdId[i],OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],OrdSL[i],OrdTP[i]");
+      string http_result = httpGET("savetrade.php?t=OrdId[i],OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],OrdSL[i],OrdTP[i]");
   */
 
 }
@@ -195,3 +196,4 @@ void save_positions() {
 
    
 //+------------------------------------------------------------------+
+ 
