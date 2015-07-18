@@ -37,12 +37,12 @@
 
 
 /*
-   2.00 verziÛ
+   2.00 verzi√≥
    
-   - sqlite-ba a fogadott kereskedÈsek azonositoit berakja orderID
-   - vÈletlenszer˚ stringet be kell ·llÌtani mt4ID, amit szintÈn t·rol az
-     adatb·zisban. Ezzel a slave tˆbb mt4-ben is tudja kezelni az sqlite
-     ban t·rolt kereskedÈseket!
+   - sqlite-ba a fogadott keresked√©sek azonositoit berakja orderID
+   - v√©letlenszer≈± stringet be kell √°ll√≠tani mt4ID, amit szint√©n t√°rol az
+     adatb√°zisban. Ezzel a slave t√∂bb mt4-ben is tudja kezelni az sqlite
+     ban t√°rolt keresked√©seket!
 
 */
 
@@ -50,7 +50,7 @@
 #include <sqlite.mqh>
 #include <mq4-http.mqh>
 
-#property copyright "Copyright © 2011, Syslog.eu, rel. 2012-05-15"
+#property copyright "Copyright ¬© 2011, Syslog.eu, rel. 2012-05-15"
 #property link      "http://syslog.eu"
 // 2012-05-01 Prefix and Suffix added
 
@@ -92,7 +92,7 @@ double OrdLot[],RealOrdLot[];
 double OrdPrice[],RealOrdPrice[];
 double OrdSL[],RealOrdSL[];
 double OrdTP[],RealOrdTP[];
-string s[];
+string s[], http_result, http_result1;
 //+------------------------------------------------------------------+
 //| expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -182,7 +182,7 @@ bool check_OrderID(unsigned int orderID) {
 int start() {
 //----
   Print("Got a tick...");
-  
+    
   if (!do_check_table_exists (db, "usedOrders")) {
        Print ("DB not exists, create schema");
        do_exec (db, "CREATE TABLE usedOrders (orderID unsigned big int, mt4ID string)");
@@ -227,7 +227,10 @@ int start() {
 
 void load_positions() {
   
+   
+   // Print (http_result);  
   
+  /*
   int handle=FileOpen(filename+".csv",FILE_CSV|FILE_READ,";");
   if(handle>0) {
 
@@ -248,8 +251,21 @@ void load_positions() {
     FileClose(handle);
     ArrayResize(s,cnt);
     cmt=cmt+nl+"DEBUG: file end";
+    
     parse_s();
   }else Print("Error opening file ",GetLastError());
+  */
+  
+  
+  // hibakezel√©s! ha nincs result!
+  http_result = httpGET("http://alfa.triak.hu/trc/cgi-bin/select.cgi");
+  
+  http_result1=StringSubstr(http_result, 0, StringLen(http_result)-1 );
+  
+  StringSplit(http_result1, StringGetCharacter("|",0), s);
+  
+  parse_s();
+  
   return(0);
 }
 //+------------------------------------------------------------------+
@@ -327,9 +343,9 @@ double LotVol(double lot,string symbol) {
     lot=lot*LotKoef;
   }
   
-  // LotMapping alapj·n ˙jrakalkul·lom a lot ÈrtÈkeket
-  // Ha azonban itt nincs egyezı p·r akkor Èrintetlen marad
-  // Az alap string am˙gy is Èrtintetlen¸l hagyja a lot -ot
+  // LotMapping alapj√°n √∫jrakalkul√°lom a lot √©rt√©keket
+  // Ha azonban itt nincs egyez≈ë p√°r akkor √©rintetlen marad
+  // Az alap string am√∫gy is √©rtintetlen√ºl hagyja a lot -ot
   if (StringLen(LotMapping)>2) {
       int LotMapString1Width =StringSplit(LotMapping, u_sep1, ArrayLotMap1);
     
@@ -337,7 +353,7 @@ double LotVol(double lot,string symbol) {
    
          int LotMapString2Width =StringSplit(ArrayLotMap1[i], u_sep2, ArrayLotMap2);
    
-         // ha a map p·r elsı eleme egyenlo a paramÈterkÈnt adott lottal, akkor a m·sodik eleme szerint alakul a lot!
+         // ha a map p√°r els≈ë eleme egyenlo a param√©terk√©nt adott lottal, akkor a m√°sodik eleme szerint alakul a lot!
          if (lot == (double)ArrayLotMap2[0]) lot=(double)ArrayLotMap2[1];
    
       }
@@ -354,7 +370,7 @@ double LotVol(double lot,string symbol) {
     }
   }
 //  Print("Calculated lot size: ",lot);
-  // Print ("A kˆvetkezı lot mÈretet haszn·lom: "+lot);
+  // Print ("A k√∂vetkez≈ë lot m√©retet haszn√°lom: "+lot);
   return(NormalizeDouble(lot,DigitsMinLot(symbol)));
 }  
  
@@ -434,14 +450,7 @@ void compare_positions() {
       }
     }
     if (!found) {
-      //no position open with this ID, need to open now
-      
-      // De elıszˆr regisztr·ljuk az sqlite adatb·zisunkban. hogy tˆbbet m·r ne haszn·ljuk fel
-      if (!check_OrderID(OrdId[i]) ) { //ha van m·r ilyen orderId az adatb·zisban, nem Ìrjuk be!
-            do_exec (db, "INSERT INTO usedOrders (orderID, mt4ID) VALUES ("+ OrdId[i] +", '"+mt4ID+"') ");
-         
-      
-      
+      //no position open with this ID, need to open now      
       
       int result;
       if (OrdTyp[i]<2) {
@@ -461,7 +470,7 @@ void compare_positions() {
         if (CopyDelayedTrades) result=OrderSend(OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],0,OrdSL[i],OrdTP[i],DoubleToStr(OrdId[i],0),magic,0);
       }
     
-    } // end of orderID check if
+   
     
     
     }
