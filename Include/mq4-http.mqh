@@ -75,7 +75,8 @@ int hSession(bool Direct)
 string httpGET(string strUrl)
 {
    int handler = hSession(false);
-   int response = InternetOpenUrlW(handler, strUrl);
+   //int response = InternetOpenUrlW(handler, strUrl);
+   int response = InternetOpenUrlW(handler, strUrl,"",0, INTERNET_FLAG_NO_CACHE_WRITE |INTERNET_FLAG_PRAGMA_NOCACHE |INTERNET_FLAG_RELOAD); 
    if (response == 0) 
         return(false);
         
