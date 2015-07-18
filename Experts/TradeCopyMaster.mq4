@@ -23,9 +23,9 @@
 
 /*
    2015.05.01
-      A mÛdosÌt·som itt, hogy az eredeti egy f·jlba Ìrja a kereskedÈseket, az
-      itteni verziÛ pedig httpGET paranccsal egy php f·jl hÌv meg egy szerveren
-      ami egy adatb·zisba Ìrja be ezeket az adatokat.
+      A m√≥dos√≠t√°som itt, hogy az eredeti egy f√°jlba √≠rja a keresked√©seket, az
+      itteni verzi√≥ pedig httpGET paranccsal egy php f√°jl h√≠v meg egy szerveren
+      ami egy adatb√°zisba √≠rja be ezeket az adatokat.
       
       pl. string http_result = httpGET("url.php");
 
@@ -34,7 +34,7 @@
 
 #include <mq4-http.mqh>
 
-#property copyright "Copyright © 2011, Syslog.eu, rel. 2012-01-04"
+#property copyright "Copyright ¬© 2011, Syslog.eu, rel. 2012-01-04"
 #property link      "http://syslog.eu"
 
 extern string cutStringFromSym="";
@@ -45,6 +45,7 @@ int Size=0,PrevSize=0;
 int cnt,TotalCounter;
 string cmt;
 string nl="\n";
+string httpstring="";
 
 int OrdId[],PrevOrdId[];
 string OrdSym[],PrevOrdSym[];
@@ -85,7 +86,7 @@ int start() {
     start=GetTickCount();
     cmt=start+nl+"Counter: "+TotalCounter;
     get_positions();
-    if(compare_positions()) save_positions(); // vagyis csak akkor ment, amikor v·ltoz·s van!
+    if(compare_positions()) save_positions(); // vagyis csak akkor ment, amikor v√°ltoz√°s van!
     Comment(cmt);
     TickCount=GetTickCount()-start;
     if(delay>TickCount)Sleep(delay-TickCount-2);
@@ -166,21 +167,27 @@ void save_positions() {
     PrevOrdTP[i]=OrdTP[i];
   }
 
-  // Size: h·ny aktÌv kereskedÈs¸nk van Èppen. Ezt minden alkalommal ˙jra Ès ˙jra kiÌrja.
+  // Size: h√°ny akt√≠v keresked√©s√ºnk van √©ppen. Ezt minden alkalommal √∫jra √©s √∫jra ki√≠rja.
   
   int handle=FileOpen("TradeCopy.csv",FILE_CSV|FILE_WRITE,",");
   if(handle>0) {
     FileWrite(handle,TotalCounter);
     TotalCounter++;
+    httpstring = "?";
     for(i=0;i<Size;i++) {
       FileWrite(handle,OrdId[i],OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],OrdSL[i],OrdTP[i]);
+      httpstring += "&size"+i+"="+Size+"&ordid"+i+"="+OrdId[i]+"&ordsym"+i+"="+OrdSym[i]+"&ordtyp"+i+"="+OrdTyp[i]+"&ordlot"+i+"="+OrdLot[i]+"&ordprice"+i+"="+OrdPrice[i]+"&ordsl"+i+"="+OrdSL[i]+"&ordtp"+i+"="+OrdTP[i]+"&";
     }
     FileClose(handle);
+   
+    // itt lehetne figyelni a visszat√©r√©st, amit az init.cgi ad esetleges hiba eset√©n
+    httpGET("http://alfa.triak.hu/trc/init.cgi"+httpstring);    
+    
   }else Print("File open has failed, error: ",GetLastError());
 
   /*
-      A fenti FileWrite Ìr·skor ˆssze kell ·llÌtanom egy hossz˙ stringet. Ebben benne van az ˆsszes trade.
-      Ezt k¸ldˆm el, a httpGET hÌv·ssal a szervernek. Ami lejegyzi a kereskedÈseket mysql adatb·zisba!
+      A fenti FileWrite √≠r√°skor √∂ssze kell √°ll√≠tanom egy hossz√∫ stringet. Ebben benne van az √∂sszes trade.
+      Ezt k√ºld√∂m el, a httpGET h√≠v√°ssal a szervernek. Ami lejegyzi a keresked√©seket mysql adatb√°zisba!
       
       A string:
       ?t=OrdId[i],OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],OrdSL[i],OrdTP[i],kib,
