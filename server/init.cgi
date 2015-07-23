@@ -93,20 +93,3 @@ if ($EVAL_ERROR) {  ### catch those exceptions! ###
 }
 __END__
 
-egy példa url
-?ordid0=72859023&ordsym0=EURUSD&ordtyp0=0&ordlot0=0.01&ordprice0=1.08504&ordsl0=0&ordtp0=0&ordid1=72859032&ordsym1=EURUSD&ordtyp1=0&ordlot1=0.01&ordprice1=1.08507&ordsl1=0&ordtp1=0&ordid2=72859042&ordsym2=EURUSD&ordtyp2=0&ordlot2=0.01&ordprice2=1.08495&ordsl2=0&ordtp2=0&ordid3=72859166&ordsym3=EURUSD&ordtyp3=0&ordlot3=0.01&ordprice3=1.08547&ordsl3=0&ordtp3=0&
-
-Új árak felvitele:
-- szerintem nem jó, hogy minden alkalommal, amikor változik a táblázat
-  a trades.txt -t törölni kelljen, majd újra létrehozni. Helyette inkább
-  a meglévő sorokat kellene updatelni, és azok amik nem kellenek pedig ki-
-  törölni. Ez gyorsabb lenne.
-  
-  Amiket megkapok: - új adatok, dátum, és a /tmp/trades.txt létezik-e vagy sem
-  
-  1. a jelen táblázat összes során az islive mezőt 0-ra állítja
-  2. felviszi az új elemeket inserttel és itt átállítja az islive-ot 1-re
-  3. a tábla összes mezőjén végigmegy és törli azokat a sorokat, ahol 0-a 
-  
-  
-
