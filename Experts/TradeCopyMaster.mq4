@@ -23,9 +23,9 @@
 
 /*
    2015.05.01
-      A módosításom itt, hogy az eredeti egy fájlba írja a kereskedéseket, az
-      itteni verzió pedig httpGET paranccsal egy php fájl hív meg egy szerveren
-      ami egy adatbázisba írja be ezeket az adatokat.
+      A mĂłdosĂ­tĂˇsom itt, hogy az eredeti egy fĂˇjlba Ă­rja a kereskedĂ©seket, az
+      itteni verziĂł pedig httpGET paranccsal egy php fĂˇjl hĂ­v meg egy szerveren
+      ami egy adatbĂˇzisba Ă­rja be ezeket az adatokat.
       
       pl. string http_result = httpGET("url.php");
 
@@ -34,10 +34,13 @@
 
 #include <mq4-http.mqh>
 
-#property copyright "Copyright © 2011, Syslog.eu, rel. 2012-01-04"
+#property copyright "Copyright Â© 2011, Syslog.eu, rel. 2012-01-04"
 #property link      "http://syslog.eu"
 
 extern string cutStringFromSym="";
+extern string Prefix="";
+extern string Suffix="";
+
 
 int delay=1000;
 int start,TickCount;
@@ -55,6 +58,16 @@ double OrdPrice[],PrevOrdPrice[];
 double OrdSL[],PrevOrdSL[];
 double OrdTP[],PrevOrdTP[];
 
+string s[], http_result, http_result1;
+
+// kliensbol athozott valtozok
+double ForceLot=0.00;
+double LotKoef=1.0;
+string LotMapping="0.01=0.01,0.02=0.02";
+double Balance=0;
+double MicroLotBalance=0;
+
+
 
 //+------------------------------------------------------------------+
 //| expert initialization function                                   |
@@ -64,6 +77,11 @@ int init()
 //----
    //int handle=FileOpen("TradeCopy.csv",FILE_CSV|FILE_WRITE,",");
    //FileClose(handle);
+   
+   // kosztik: Amikor inditjuk az EA-t akkor be kell toltenie a szerverrol a tarolt kereskedeseket
+   load_positions();
+   
+   Print ( PrevSize);
 //----
    return(0);
   }
@@ -86,13 +104,18 @@ int start() {
     start=GetTickCount();
     cmt=start+nl+"Counter: "+TotalCounter;
     get_positions();
-    if(compare_positions()) save_positions(); // vagyis csak akkor ment, amikor változás van!
+    if(compare_positions()) {
+         // Print ("Van mentes");
+         save_positions(); // vagyis csak akkor ment, amikor vĂˇltozĂˇs van!
+    } else {
+         // Print ("nincs mentés mert minde ua.");
+    }
     Comment(cmt);
     TickCount=GetTickCount()-start;
     if(delay>TickCount)Sleep(delay-TickCount-2);
   }
   Alert("end, TradeCopy EA stopped");
-  Comment("");
+  
   return(0);
 
 
@@ -143,6 +166,7 @@ bool compare_positions() {
   return(false);
 }
 
+
 void save_positions() {
 
   if (PrevSize != Size) {
@@ -167,7 +191,7 @@ void save_positions() {
     PrevOrdTP[i]=OrdTP[i];
   }
 
-  // Size: hány aktív kereskedésünk van éppen. Ezt minden alkalommal újra és újra kiírja.
+  // Size: hĂˇny aktĂ­v kereskedĂ©sĂĽnk van Ă©ppen. Ezt minden alkalommal Ăşjra Ă©s Ăşjra kiĂ­rja.
   
   int handle=FileOpen("TradeCopy.csv",FILE_CSV|FILE_WRITE,",");
   if(handle>0) {
@@ -180,14 +204,15 @@ void save_positions() {
     }
     FileClose(handle);
    
-    // itt lehetne figyelni a visszatérést, amit az init.cgi ad esetleges hiba esetén
-    httpGET("http://alfa.triak.hu/trc/init.cgi"+httpstring);    
+    // itt lehetne figyelni a visszatĂ©rĂ©st, amit az init.cgi ad esetleges hiba esetĂ©n
+    //Print("http://alfa.triak.hu/trc/cgi-bin/init.cgi",httpstring);
+    httpGET("http://alfa.triak.hu/trc/cgi-bin/init.cgi"+httpstring);    
     
   }else Print("File open has failed, error: ",GetLastError());
 
   /*
-      A fenti FileWrite íráskor össze kell állítanom egy hosszú stringet. Ebben benne van az összes trade.
-      Ezt küldöm el, a httpGET hívással a szervernek. Ami lejegyzi a kereskedéseket mysql adatbázisba!
+      A fenti FileWrite Ă­rĂˇskor Ă¶ssze kell ĂˇllĂ­tanom egy hosszĂş stringet. Ebben benne van az Ă¶sszes trade.
+      Ezt kĂĽldĂ¶m el, a httpGET hĂ­vĂˇssal a szervernek. Ami lejegyzi a kereskedĂ©seket mysql adatbĂˇzisba!
       
       A string:
       ?t=OrdId[i],OrdSym[i],OrdTyp[i],OrdLot[i],OrdPrice[i],OrdSL[i],OrdTP[i],kib,
@@ -204,3 +229,167 @@ void save_positions() {
    
 //+------------------------------------------------------------------+
  
+// Kosztik által átrakott szubrutinok a TradeCopySlave-bol
+
+void load_positions() {
+  
+   
+   // Print (http_result);  
+  
+  /*
+  int handle=FileOpen(filename+".csv",FILE_CSV|FILE_READ,";");
+  if(handle>0) {
+
+    string line=FileReadString(handle);
+    if (TotalCounter == StrToInteger(line)) {
+      FileClose(handle);
+      return;
+    }else{
+      TotalCounter=StrToInteger(line);
+    }
+    int cnt=0;
+    while(FileIsEnding(handle)==false) {
+    cmt=cmt+nl+"DEBUG: reading file";
+      if (ArraySize(s)<cnt+1) ArrayResize(s,cnt+1);
+      s[cnt]=FileReadString(handle);
+      cnt++;
+    }
+    FileClose(handle);
+    ArrayResize(s,cnt);
+    cmt=cmt+nl+"DEBUG: file end";
+    
+    parse_s();
+  }else Print("Error opening file ",GetLastError());
+  */
+  
+  
+  // hibakezelĂ©s! ha nincs result!
+  http_result = httpGET("http://alfa.triak.hu/trc/cgi-bin/select.cgi");
+  
+  http_result1=StringSubstr(http_result, 0, StringLen(http_result)-1 );
+  
+  StringSplit(http_result1, StringGetCharacter("|",0), s);
+  //Print ("http result: ", http_result);
+  parse_s();
+  
+  return(0);
+}
+
+void parse_s() {
+  
+  if (PrevSize!=ArraySize(s)) {
+    PrevSize=ArraySize(s);
+    ArrayResize(PrevOrdId,PrevSize);
+    ArrayResize(PrevOrdSym,PrevSize);
+    ArrayResize(PrevOrdTyp,PrevSize);
+    ArrayResize(PrevOrdLot,PrevSize);
+    ArrayResize(PrevOrdPrice,PrevSize);
+    ArrayResize(PrevOrdSL,PrevSize);
+    ArrayResize(PrevOrdTP,PrevSize);
+  }
+  for(int i=0;i<ArraySize(s);i++) {
+  
+// get line length, starting position, find position of ",", calculate the length of the substring
+    int Len=StringLen(s[i]);
+    int start=0;
+    int end=StringFind(s[i],",",start);
+    int length=end-start;
+// get Id
+    PrevOrdId[i]=StrToInteger(StringSubstr(s[i],start,length));
+
+    start=end+1;
+    end=StringFind(s[i],",",start);
+    length=end-start;
+    PrevOrdSym[i]=Prefix+StringSubstr(s[i],start,length)+Suffix;
+   
+    start=end+1;
+    end=StringFind(s[i],",",start);
+    length=end-start;
+    PrevOrdTyp[i]=StrToInteger(StringSubstr(s[i],start,length));
+
+    start=end+1;
+    end=StringFind(s[i],",",start);
+    length=end-start;
+    PrevOrdLot[i]=LotVol(StrToDouble(StringSubstr(s[i],start,length)),PrevOrdSym[i]);
+
+    start=end+1;
+    end=StringFind(s[i],",",start);
+    length=end-start;
+    PrevOrdPrice[i]=NormalizeDouble(StrToDouble(StringSubstr(s[i],start,length)),digits(PrevOrdSym[i]));
+
+    start=end+1;
+    end=StringFind(s[i],",",start);
+    length=end-start;
+    PrevOrdSL[i]=NormalizeDouble(StrToDouble(StringSubstr(s[i],start,length)),digits(PrevOrdSym[i]));
+
+    start=end+1;
+    end=StringFind(s[i],",",start);
+    length=end-start;
+    PrevOrdTP[i]=NormalizeDouble(StrToDouble(StringSubstr(s[i],start,length)),digits(PrevOrdSym[i]));
+
+  }
+}
+
+double LotVol(double lot,string symbol) {
+
+
+
+  ushort u_sep1, u_sep2;
+  string sep1=",";
+  string sep2="=";
+  u_sep1 = StringGetCharacter(sep1,0);
+  u_sep2 = StringGetCharacter(sep2,0);
+  string ArrayLotMap1[], ArrayLotMap2[];
+
+  if (ForceLot > 0) {
+    lot=ForceLot;
+  }else{
+    lot=lot*LotKoef;
+  }
+  
+  // LotMapping alapjĂˇn ĂşjrakalkulĂˇlom a lot Ă©rtĂ©keket
+  // Ha azonban itt nincs egyezĹ‘ pĂˇr akkor Ă©rintetlen marad
+  // Az alap string amĂşgy is Ă©rtintetlenĂĽl hagyja a lot -ot
+  if (StringLen(LotMapping)>2) {
+      int LotMapString1Width =StringSplit(LotMapping, u_sep1, ArrayLotMap1);
+    
+      for (int i=0;i< LotMapString1Width;i++) {
+   
+         int LotMapString2Width =StringSplit(ArrayLotMap1[i], u_sep2, ArrayLotMap2);
+   
+         // ha a map pĂˇr elsĹ‘ eleme egyenlo a paramĂ©terkĂ©nt adott lottal, akkor a mĂˇsodik eleme szerint alakul a lot!
+         if (lot == (double)ArrayLotMap2[0]) lot=(double)ArrayLotMap2[1];
+   
+      }
+
+  }
+
+
+
+  if (Balance<AccountBalance()) Balance=AccountBalance();
+  
+  if (MicroLotBalance > 0) {
+    if (MathFloor(Balance/MicroLotBalance)/100 > lot) {
+      lot=MathFloor(Balance/MicroLotBalance)/100;
+    }
+  }
+//  Print("Calculated lot size: ",lot);
+  // Print ("A kĂ¶vetkezĹ‘ lot mĂ©retet hasznĂˇlom: "+lot);
+  return(NormalizeDouble(lot,DigitsMinLot(symbol)));
+}  
+ 
+int DigitsMinLot(string symbol) {
+   double ml=MarketInfo(symbol,MODE_MINLOT);
+//--- 1/x of lot step
+   double Dig=0;
+   if(ml!=0)Dig=1.0/ml;
+//--- conversion of 1/x to digits
+   double res=0;
+   if(Dig>1)res=1;
+   if(Dig>10)res=2;
+   if(Dig>100)res=3;
+   if(Dig>1000)res=4;
+   return(res);
+}
+ 
+int digits(string symbol){return(MarketInfo(symbol,MODE_DIGITS));}
