@@ -93,6 +93,7 @@ double OrdPrice[],RealOrdPrice[];
 double OrdSL[],RealOrdSL[];
 double OrdTP[],RealOrdTP[];
 string s[], http_result, http_result1;
+bool isHTTPGetOk ;
 //+------------------------------------------------------------------+
 //| expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -183,7 +184,7 @@ bool check_OrderID(unsigned int orderID) {
 
 void OnTick() {
 //----
-  Print("Got a tick...");
+  // Print("Got a tick...");
     
   if (!do_check_table_exists (db, "usedOrders")) {
        Print ("DB not exists, create schema");
@@ -195,7 +196,7 @@ void OnTick() {
     
     
     
-    
+    if (isHTTPGetOk == true) {
     
     start=GetTickCount();
  
@@ -222,7 +223,7 @@ void OnTick() {
   //}
   //Alert("end, TradeCopy EA stopped");
   //Comment("");  
-   
+  }
   return(0);
 
 }
@@ -261,6 +262,12 @@ void load_positions() {
   
   // hibakezelĂ©s! ha nincs result!
   http_result = httpGET("http://alfa.triak.hu/trc/cgi-bin/select.cgi");
+  
+  if (http_result == "false") {
+   isHTTPGetOk = false;
+  } else {
+   isHTTPGetOk = true;
+  }
   
   http_result1=StringSubstr(http_result, 0, StringLen(http_result)-1 );
   
@@ -423,6 +430,7 @@ int DigitsMinLot(string symbol) {
 void compare_positions() {
 // load real positions and compare them with master ones
   real_positions();
+  
   int x[];
   ArrayResize(x,RealSize);
   if (RealSize>0)ArrayInitialize(x,0);
@@ -432,7 +440,9 @@ void compare_positions() {
   for (int i=0;i<Size;i++) {       // for all master orders
     bool found=false;
     for (int j=0;j<RealSize;j++) { // find the right real order
+     
       if (DoubleToStr(OrdId[i],0)==RealOrdOrig[j]) {
+        
         //compare values
         found=true;
         x[j]=1;
@@ -440,12 +450,16 @@ void compare_positions() {
 // if not market order, compare open prices - later 
         //compare volumes - TODO later
         //compare open price when delayed order
+        // Print (OrdTyp[i],">1", "&&", OrdPrice[i], "!=", RealOrdPrice[j]);
         if (OrdTyp[i]>1 && OrdPrice[i] != RealOrdPrice[j]) {
           OrderSelect(RealOrdId[j],SELECT_BY_TICKET);
           OrderModify(OrderTicket(),OrdPrice[i],OrderStopLoss(),OrderTakeProfit(),0);
         }
         //compare SL,TP
+        
+        //Print (OrdTP[i],"!=",RealOrdTP[j]," || ",OrdSL[i],"!=",RealOrdSL[j]);
         if (OrdTP[i]!=RealOrdTP[j] || OrdSL[i]!=RealOrdSL[j]) {
+          
           OrderSelect(RealOrdId[j],SELECT_BY_TICKET);
           OrderModify(OrderTicket(),OrderOpenPrice(),OrdSL[i],OrdTP[i],0);
         }
